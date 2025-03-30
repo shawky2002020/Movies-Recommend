@@ -11,6 +11,7 @@ public class Movie {
     public Movie(String title, String movieId, List<String> genres) throws IllegalArgumentException {
         if (!isValidTitle(title)) {
             throw new IllegalArgumentException("ERROR: Movie Title " + title + " is wrong");
+            
         }
         if (!isValidMovieId(title, movieId)) {
             throw new IllegalArgumentException("ERROR: Movie Id " + movieId + " is wrong");
