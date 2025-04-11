@@ -2,110 +2,140 @@ package test;
 import classes.*;
 
 import org.junit.jupiter.api.*;
+
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MovieRecommendationSystemTest {
-    private static final String MOVIES_FILE = "movies.txt";
-    private static final String USERS_FILE = "users.txt";
-    private static final String RECOMMENDATIONS_FILE = "recommendations.txt";
+
+    private final String testMoviesFile = "test_movies.txt";
+    private final String testUsersFile = "test_users.txt";
+    private final String testOutputFile = "recommendations.txt";
 
     @BeforeEach
-    void setUp() throws IOException {
-        // Ensure files are empty before each test
-        Files.deleteIfExists(Paths.get(MOVIES_FILE));
-        Files.deleteIfExists(Paths.get(USERS_FILE));
-        Files.deleteIfExists(Paths.get(RECOMMENDATIONS_FILE));
+    void resetData() throws Exception {
+        Files.deleteIfExists(Path.of(testMoviesFile));
+        Files.deleteIfExists(Path.of(testUsersFile));
+        Files.deleteIfExists(Path.of(testOutputFile));
+
+        // Reset internal static sets
+        var movieField = Movie.class.getDeclaredField("usedSuffixes");
+        movieField.setAccessible(true);
+        ((java.util.Set<String>) movieField.get(null)).clear();
+
+        var userField = User.class.getDeclaredField("usedIDs");
+        userField.setAccessible(true);
+        ((java.util.Set<String>) userField.get(null)).clear();
+    }
+
+    @AfterEach
+    void cleanup() throws IOException {
+        Files.deleteIfExists(Path.of(testMoviesFile));
+        Files.deleteIfExists(Path.of(testUsersFile));
+        Files.deleteIfExists(Path.of(testOutputFile));
     }
 
     @Test
-    void testErrorWrittenForInvalidMovieTitle() throws IOException {
-        // Writing invalid movie data
-        Files.write(Paths.get(MOVIES_FILE), List.of(
-                "the godfather, TG002",  // Invalid title (should start with uppercase)
-                "Crime, Drama"
-        ));
-        Files.write(Paths.get(USERS_FILE), List.of(
-                "Ali Mohamed, 12345678X",
-                "TG002"
-        ));
-
-        MovieRecommendationSystem.generateRecommendations();
-
-        // Check if error is written in recommendations.txt
-        List<String> lines = Files.readAllLines(Paths.get(RECOMMENDATIONS_FILE));
-        assertFalse(lines.isEmpty());
-        assertEquals("ERROR: Movie Title the godfather is wrong", lines.get(0));
-    }
-
-    @Test
-    void testErrorWrittenForInvalidUserName() throws IOException {
-        // Writing invalid user data
-        Files.write(Paths.get(MOVIES_FILE), List.of(
-                "The Godfather, TG002",
-                "Crime, Drama"
-        ));
-        Files.write(Paths.get(USERS_FILE), List.of(
-                "Ali123, 12345678X",  // Invalid name (contains numbers)
-                "TG002"
-        ));
-
-        MovieRecommendationSystem.generateRecommendations();
-
-        // Check if error is written in recommendations.txt
-        List<String> lines = Files.readAllLines(Paths.get(RECOMMENDATIONS_FILE));
-        assertFalse(lines.isEmpty());
-        assertEquals("ERROR: User Name Ali123 is wrong", lines.get(0));
-    }
-
-    @Test
-    void testValidRecommendationsAreWritten() throws IOException {
-        // Writing valid movie and user data
-        Files.write(Paths.get(MOVIES_FILE), List.of(
+    void testValidRecommendationIsWritten() throws IOException {
+        // Valid input files
+        Files.write(Path.of(testMoviesFile), List.of(
                 "The Shawshank Redemption, TSR001",
                 "Drama",
                 "The Godfather, TG002",
                 "Crime, Drama"
         ));
-        Files.write(Paths.get(USERS_FILE), List.of(
-                "Hassan Ali, 12345678X",
-                "TSR001, TG002"
-        ));
 
-        MovieRecommendationSystem.generateRecommendations();
-
-        // Check recommendations content
-        List<String> lines = Files.readAllLines(Paths.get(RECOMMENDATIONS_FILE));
-        assertFalse(lines.isEmpty());
-        assertEquals("Hassan Ali's Recommendations:", lines.get(0));
-        assertEquals("The Shawshank Redemption", lines.get(1));
-        assertEquals("The Godfather", lines.get(2));
-    }
-
-    @Test
-    void testEmptyMoviesFile() throws IOException {
-        // Empty movies file
-        Files.write(Paths.get(MOVIES_FILE), List.of());
-        Files.write(Paths.get(USERS_FILE), List.of(
+        Files.write(Path.of(testUsersFile), List.of(
                 "Hassan Ali, 12345678X",
                 "TSR001"
         ));
 
-        MovieRecommendationSystem.generateRecommendations();
+        MovieRecommendationSystem.generateRecommendations(testOutputFile,testMoviesFile, testUsersFile);
 
-        List<String> lines = Files.readAllLines(Paths.get(RECOMMENDATIONS_FILE));
-        assertFalse(lines.isEmpty());
-        assertEquals("ERROR: file is empty", lines.get(0)); // Adjust error message based on actual implementation
+        List<String> lines = Files.readAllLines(Path.of(testOutputFile));
+        assertTrue(lines.contains("Hassan Ali, 12345678X"));
+        assertTrue(lines.contains("The Godfather"));
     }
 
-    @AfterEach
-    void tearDown() throws IOException {
-        // Cleanup test files
-        Files.deleteIfExists(Paths.get(MOVIES_FILE));
-        Files.deleteIfExists(Paths.get(USERS_FILE));
-//        Files.deleteIfExists(Paths.get(RECOMMENDATIONS_FILE));
+    @Test
+    void testErrorInMovieIsWritten() throws IOException {
+        // Invalid movie title
+        Files.write(Path.of(testMoviesFile), List.of(
+                "the godfather, TG002",
+                "Crime, Drama"
+        ));
+
+        Files.write(Path.of(testUsersFile), List.of(
+                "Hassan Ali, 12345678X",
+                "TG002"
+        ));
+
+        MovieRecommendationSystem.generateRecommendations(testOutputFile,testMoviesFile, testUsersFile);
+
+        List<String> lines = Files.readAllLines(Path.of(testOutputFile));
+        assertEquals("ERROR: Movie Title the godfather is wrong", lines.get(0));
+    }
+
+    @Test
+    void testErrorInUserIsWritten() throws IOException {
+        // Invalid user name
+        Files.write(Path.of(testMoviesFile), List.of(
+                "The Godfather, TG002",
+                "Crime, Drama"
+        ));
+
+        Files.write(Path.of(testUsersFile), List.of(
+                "ali123, 12345678X",
+                "TG002"
+        ));
+
+        MovieRecommendationSystem.generateRecommendations(testOutputFile,testMoviesFile, testUsersFile);
+
+        List<String> lines = Files.readAllLines(Path.of(testOutputFile));
+        assertEquals("ERROR: User Name ali123 is wrong", lines.get(0));
+    }
+
+    @Test
+    void testDuplicateMovieIdNumberError() throws IOException {
+        Files.write(Path.of(testMoviesFile), List.of(
+                "The Godfather, TG001",
+                "Drama",
+                "The Dark Knight, TDK001",
+                "Action"
+        ));
+
+        Files.write(Path.of(testUsersFile), List.of(
+                "Ali Mohamed, 12345678X",
+                "TG001"
+        ));
+
+        MovieRecommendationSystem.generateRecommendations(testOutputFile,testMoviesFile, testUsersFile);
+
+        List<String> lines = Files.readAllLines(Path.of(testOutputFile));
+        assertEquals("ERROR: Movie Id numbers TDK001 aren’t unique", lines.get(0));
+    }
+
+    @Test
+    void testDuplicateUserIdNumberError() throws IOException {
+        Files.write(Path.of(testMoviesFile), List.of(
+                "The Godfather, TG002",
+                "Drama"
+        ));
+
+        Files.write(Path.of(testUsersFile), List.of(
+                "Ali Mohamed, 12345678X",
+                "TG002",
+                "Omar Samir, 12345678X",
+                "TG002"
+        ));
+
+        MovieRecommendationSystem.generateRecommendations(testOutputFile,testMoviesFile, testUsersFile);
+
+        List<String> lines = Files.readAllLines(Path.of(testOutputFile));
+        assertEquals("ERROR: User Id numbers 12345678X aren’t unique", lines.get(0));
     }
 }

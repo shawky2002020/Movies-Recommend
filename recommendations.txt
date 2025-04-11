@@ -1,1 +1,14 @@
-ERROR: User Name Ali123 is wrong
+Hassan Ali, 12345678X
+The Godfather
+Inception
+Interstellar
+
+Ali Mohamed, 87654321W
+The Shawshank Redemption
+The Dark Knight
+Interstellar
+
+Omar Samir, 12315678X
+The Dark Knight
+Interstellar
+

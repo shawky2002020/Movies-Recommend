@@ -24,7 +24,8 @@ public class FileHandler {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            
+            throw new IOException(e);
+
         }
         return movies;
     }
@@ -47,6 +48,8 @@ public class FileHandler {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            throw new IOException(e);
+
         }
         return users;
     }

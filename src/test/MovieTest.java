@@ -1,36 +1,60 @@
 package test;
-import classes.Movie;
+import classes.*;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 
-public class MovieTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    @Test
-    public void testValidMovie() {
-        Movie movie = new Movie("The Matrix", "TM123", Arrays.asList("Action", "Sci-Fi"));
-        assertEquals("The Matrix", movie.getTitle());
-        assertEquals("TM123", movie.getMovieId());
-    }
+class MovieTest {
 
-    @Test
-    public void testInvalidMovieTitle() {
+    @BeforeEach
+    void resetMovieIds() {
+        // Reset the used suffixes via reflection (since usedSuffixes is private static)
         try {
-            new Movie("the matrix", "TMX123", Arrays.asList("Action", "Sci-Fi"));
-            fail("Expected IllegalArgumentException for invalid title");
-        } catch (IllegalArgumentException e) {
-            assertEquals("ERROR: Movie Title the matrix is wrong", e.getMessage());
+            var field = Movie.class.getDeclaredField("usedSuffixes");
+            field.setAccessible(true);
+            ((java.util.Set<String>) field.get(null)).clear();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to reset Movie suffixes", e);
         }
     }
 
     @Test
-    public void testInvalidMovieId() {
-        try {
-            new Movie("Inception", "INC12", Arrays.asList("Sci-Fi", "Thriller"));
-            fail("Expected IllegalArgumentException for invalid movie ID");
-        } catch (IllegalArgumentException e) {
-            assertEquals("ERROR: Movie Id INC12 is wrong", e.getMessage());
-        }
+    void testValidMovie() {
+        assertDoesNotThrow(() ->
+                new Movie("The Matrix", "TM123", Arrays.asList("Action", "Sci-Fi"))
+        );
+    }
+
+    @Test
+    void testInvalidTitleFormat() {
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+                new Movie("the matrix", "TM123", Arrays.asList("Action"))
+        );
+        assertEquals("ERROR: Movie Title the matrix is wrong", e.getMessage());
+    }
+
+    @Test
+    void testInvalidMovieIdLetters() {
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+                new Movie("The Godfather", "GF123", Arrays.asList("Drama"))
+        );
+        assertEquals("ERROR: Movie Id letters GF123 are wrong", e.getMessage());
+    }
+
+    @Test
+    void testDuplicateMovieIdSuffix() {
+        assertDoesNotThrow(() ->
+                new Movie("The Matrix", "TM123", Arrays.asList("Action"))
+        );
+
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+                new Movie("The Dark Knight", "TDK123", Arrays.asList("Action"))
+        );
+
+        assertEquals("ERROR: Movie Id numbers TDK123 aren’t unique", e.getMessage());
     }
 }

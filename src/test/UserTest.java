@@ -1,62 +1,60 @@
-//package test;
-//import classes.User;
-//import org.junit.jupiter.api.Test;
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//class UserTest {
-//
-//    @Test
-//    void testValidUserCreation() {
-//        User user = new User("John Doe", "USR123");
-//        assertEquals("John Doe", user.getName());
-//        assertEquals("USR123", user.getUserId());
-//    }
-//
-//    @Test
-//    void testInvalidUserName() {
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            new User("john doe", "USR123"); // Name should be capitalized
-//        });
-//        assertEquals("Invalid name format: Name must start with a capital letter", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testInvalidUserId() {
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            new User("John Doe", "123"); // User ID should have proper format
-//        });
-//        assertEquals("Invalid user ID format", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testSetValidName() {
-//        User user = new User("John Doe", "USR123");
-//        user.setName("Jane Doe");
-//        assertEquals("Jane Doe", user.getName());
-//    }
-//
-//    @Test
-//    void testSetInvalidName() {
-//        User user = new User("John Doe", "USR123");
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            user.setName("jane doe"); // Name must start with uppercase
-//        });
-//        assertEquals("Invalid name format: Name must start with a capital letter", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testSetValidUserId() {
-//        User user = new User("John Doe", "USR123");
-//        user.setUserId("USR456");
-//        assertEquals("USR456", user.getUserId());
-//    }
-//
-//    @Test
-//    void testSetInvalidUserId() {
-//        User user = new User("John Doe", "USR123");
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            user.setUserId("456"); // Invalid format
-//        });
-//        assertEquals("Invalid user ID format", exception.getMessage());
-//    }
-//}
+package test;
+import classes.*;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class UserTest {
+
+    @BeforeEach
+    void resetUserIds() {
+        // Reset usedIDs using reflection
+        try {
+            var field = User.class.getDeclaredField("usedIDs");
+            field.setAccessible(true);
+            ((java.util.Set<String>) field.get(null)).clear();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to reset User IDs", e);
+        }
+    }
+
+    @Test
+    void testValidUser() {
+        assertDoesNotThrow(() ->
+                new User("Hassan Ali", "12345678X", Arrays.asList("TSR001"))
+        );
+    }
+
+    @Test
+    void testInvalidUserName() {
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+                new User(" ali", "12345678X", Arrays.asList("TSR001"))
+        );
+        assertEquals("ERROR: User Name  ali is wrong", e.getMessage());
+    }
+
+    @Test
+    void testInvalidUserIdFormat() {
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+                new User("Ali Mohamed", "123456", Arrays.asList("TSR001"))
+        );
+        assertEquals("ERROR: User Id 123456 is wrong", e.getMessage());
+    }
+
+    @Test
+    void testDuplicateUserId() {
+        assertDoesNotThrow(() ->
+                new User("Ali Mohamed", "12345678X", Arrays.asList("TSR001"))
+        );
+
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
+                new User("Omar Samir", "12345678X", Arrays.asList("TG002"))
+        );
+
+        assertEquals("ERROR: User Id numbers 12345678X aren’t unique", e.getMessage());
+    }
+}
