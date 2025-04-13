@@ -27,10 +27,17 @@ public class MovieRecommendationSystem {
                     // Get watched genres
                     Set<String> watchedGenres = new HashSet<>();
                     for (String watchedMovieId : user.getWatchedMovies()) {
+                        boolean found = false;
                         for (Movie movie : movies) {
                             if (movie.getMovieId().equals(watchedMovieId)) {
                                 watchedGenres.addAll(movie.getGenres());
+                                found = true;
+                                break;
                             }
+                        }
+                        if (!found) {
+                            // You can choose either to ignore, log, or stop execution
+                            throw new IllegalArgumentException("ERROR: User " + user.getUserId() + " watched movie ID '" + watchedMovieId + "' which does not exist in the movie list.");
                         }
                     }
 
