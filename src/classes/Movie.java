@@ -1,53 +1,59 @@
-package classes;
+package org.example;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 public class Movie {
-    private String title;
-    private String movieId;
-    private List<String> genres;
-    private static final Set<String> usedSuffixes = new HashSet<>();
+    private String movieID;
+    private String movieTitle;
+    private List<String> movieGenres;
 
-    public Movie(String title, String movieId, List<String> genres) throws IllegalArgumentException {
-        if (!isValidTitle(title)) {
-            throw new IllegalArgumentException("ERROR: Movie Title " + title + " is wrong");
-        }
-
-        String expectedPrefix = title.replaceAll("[^A-Z]", "");
-        String regex = "^" + expectedPrefix + "\\d{3}$";
-
-        if (!movieId.matches(regex)) {
-            throw new IllegalArgumentException("ERROR: Movie Id letters " + movieId + " are wrong");
-        }
-
-        String suffix = movieId.substring(movieId.length() - 3);
-        if (usedSuffixes.contains(suffix)) {
-            throw new IllegalArgumentException("ERROR: Movie Id numbers " + movieId + " aren’t unique");
-        }
-
-        usedSuffixes.add(suffix);
-
-        this.title = title;
-        this.movieId = movieId;
-        this.genres = genres;
+    public Movie(String movieID, String movieTitle, List<String> movieGenres) {
+        this.movieID = movieID;
+        this.movieTitle = movieTitle;
+        this.movieGenres = new ArrayList<>(movieGenres);
     }
 
-    public String getTitle() {
-        return title;
+    public void setMovieID(String movieID) {
+        this.movieID = movieID;
     }
 
-    public String getMovieId() {
-        return movieId;
+    public void setMovieTitle(String movieTitle) {
+        this.movieTitle = movieTitle;
     }
 
-    public List<String> getGenres() {
-        return genres;
+    public void setMovieGenres(List<String> movieGenres) {
+        this.movieGenres = new ArrayList<>(movieGenres);
     }
 
-    private boolean isValidTitle(String title) {
-        return Pattern.matches("([A-Z][a-z]*)(\\s[A-Z][a-z]*)*", title);
+    public String getMovieID() {
+        return movieID;
+    }
+
+    public String getMovieTitle() {
+        return movieTitle;
+    }
+
+    public List<String> getMovieGenres() {
+        return new ArrayList<>(movieGenres);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(movieTitle, movieID, new HashSet<>(movieGenres));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Movie movie)) return false;
+        return Objects.equals(movieTitle, movie.movieTitle) && Objects.equals(movieID, movie.movieID) && Objects.equals(new HashSet<>(this.movieGenres), new HashSet<>(movie.movieGenres));
+    }
+    @Override
+    public String toString() {
+        return "Movie{" + "title='" + movieTitle + '\'' + ", id='" + movieID + '\'' + ", genres=" + movieGenres + '}';
     }
 }
+
+
