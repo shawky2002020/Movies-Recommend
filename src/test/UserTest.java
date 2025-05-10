@@ -1,60 +1,143 @@
-package test;
-import classes.*;
+package org.example;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserTest {
+/**
 
-    @BeforeEach
-    void resetUserIds() {
-        // Reset usedIDs using reflection
-        try {
-            var field = User.class.getDeclaredField("usedIDs");
-            field.setAccessible(true);
-            ((java.util.Set<String>) field.get(null)).clear();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to reset User IDs", e);
-        }
-    }
+ * Unit tests for the User class to validate equality, toString behavior, and integrity with varied data.
+
+ */
+
+public class UserTesting {
+
+    // Checks equality of two identical users (same name, ID, and liked movie IDs)
 
     @Test
-    void testValidUser() {
-        assertDoesNotThrow(() ->
-                new User("Hassan Ali", "12345678X", Arrays.asList("TSR001"))
-        );
+
+    public void testEqualityWithSameAttributes() {
+
+        User user1 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        User user2 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        assertEquals(user1, user2);
+
     }
+
+    // Validates that different user IDs result in inequality
 
     @Test
-    void testInvalidUserName() {
-        Exception e = assertThrows(IllegalArgumentException.class, () ->
-                new User(" ali", "12345678X", Arrays.asList("TSR001"))
-        );
-        assertEquals("ERROR: User Name  ali is wrong", e.getMessage());
+
+    public void testInequalityWithDifferentIds() {
+
+        User user1 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        User user2 = new User("87654321B", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        assertNotEquals(user1, user2);
+
     }
+
+    // Validates that different user names result in inequality
 
     @Test
-    void testInvalidUserIdFormat() {
-        Exception e = assertThrows(IllegalArgumentException.class, () ->
-                new User("Ali Mohamed", "123456", Arrays.asList("TSR001"))
-        );
-        assertEquals("ERROR: User Id 123456 is wrong", e.getMessage());
+
+    public void testInequalityWithDifferentNames() {
+
+        User user1 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        User user2 = new User("12345678A", "Robert Taylor", List.of("AJT001", "HDA002", "MSP003"));
+
+        assertNotEquals(user1, user2);
+
     }
+
+    // Validates that movie order doesn't affect equality
 
     @Test
-    void testDuplicateUserId() {
-        assertDoesNotThrow(() ->
-                new User("Ali Mohamed", "12345678X", Arrays.asList("TSR001"))
-        );
 
-        Exception e = assertThrows(IllegalArgumentException.class, () ->
-                new User("Omar Samir", "12345678X", Arrays.asList("TG002"))
-        );
+    public void testEqualityWithDifferentMovieOrder() {
 
-        assertEquals("ERROR: User Id numbers 12345678X aren’t unique", e.getMessage());
+        User user1 = new User("12345678A", "Alice Johnson", List.of("HDA002", "AJT001", "MSP003"));
+
+        User user2 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        assertEquals(user1, user2);
+
     }
+
+    // Confirms that changing one movie ID breaks equality
+
+    @Test
+
+    public void testInequalityWithDifferentLikedMovieIds() {
+
+        User user1 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        User user2 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "DRL004"));
+
+        assertNotEquals(user1, user2);
+
+    }
+
+    // Validates equality of objects using assertTrue
+
+    @Test
+
+    public void testEqualsMethodReturnsTrue() {
+
+        User user1 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        User user2 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        assertTrue(user1.equals(user2));
+
+    }
+
+    // Validates inequality of users using assertFalse
+
+    @Test
+
+    public void testEqualsMethodReturnsFalse() {
+
+        User user1 = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        User user2 = new User("87654321B", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        assertFalse(user1.equals(user2));
+
+    }
+
+    // Verifies correct string representation from toString method
+
+    @Test
+
+    public void testToStringOutput() {
+
+        User user = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        String expected = "User{name='Alice Johnson', id='12345678A', likedMovieIds=[AJT001, HDA002, MSP003]}";
+
+        assertEquals(expected, user.toString());
+
+    }
+
+    // Checks that comparing to null returns false
+
+    @Test
+
+    public void testNotEqualsWithNullObject() {
+
+        User user = new User("12345678A", "Alice Johnson", List.of("AJT001", "HDA002", "MSP003"));
+
+        assertNotEquals(null, user);
+
+    }
+
 }
+
+
