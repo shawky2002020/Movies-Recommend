@@ -1,47 +1,60 @@
-package classes;
+package org.example;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 public class User {
-    private String name;
-    private String userId;
-    private List<String> watchedMovies;
-    private static final Set<String> usedIDs = new HashSet<>();
+    private String userID;
+    private String username;
+    private List<String> likedMovieIds;
 
-    private static final Pattern USER_ID_PATTERN = Pattern.compile("^\\d{8}[A-Za-z0-9]$");
-    private static final Pattern NAME_PATTERN = Pattern.compile("^[A-Za-z]+(?: [A-Za-z]+)*$");
-
-    public User(String name, String userId, List<String> watchedMovies) {
-        if (!NAME_PATTERN.matcher(name).matches()) {
-            throw new IllegalArgumentException("ERROR: User Name " + name + " is wrong");
-        }
-
-        if (!USER_ID_PATTERN.matcher(userId).matches()) {
-            throw new IllegalArgumentException("ERROR: User Id " + userId + " is wrong");
-        }
-
-        if (usedIDs.contains(userId)) {
-            throw new IllegalArgumentException("ERROR: User Id numbers " + userId + " aren’t unique");
-        }
-
-        usedIDs.add(userId);
-        this.name = name;
-        this.userId = userId;
-        this.watchedMovies = watchedMovies;
+    public User(String userID, String username, List<String> likedMovieIds) {
+        this.userID = userID;
+        this.username = username;
+        this.likedMovieIds = new ArrayList<>(likedMovieIds); // Defensive copy
     }
 
-    public String getName() {
-        return name;
+    // Getters
+    public String getUserID() {
+        return userID;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUsername() {
+        return username;
     }
 
-    public List<String> getWatchedMovies() {
-        return watchedMovies;
+    public List<String> getLikedMovieIds() {
+        return new ArrayList<>(likedMovieIds); // Defensive copy
     }
-}
+
+    // Setters
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setLikedMovieIds(List<String> likedMovieIds) {
+        this.likedMovieIds = new ArrayList<>(likedMovieIds); // Defensive copy
+    }
+    @Override
+    public String toString() {
+        return "User{" + "name='" + username + '\'' + ", id='" + userID + '\'' + ", likedMovieIds=" + likedMovieIds + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username, userID, new HashSet<>(likedMovieIds));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof User user)) return false;
+        return Objects.equals(username, user.username) && Objects.equals(userID, user.userID) && Objects.equals(new HashSet<>(this.likedMovieIds), new HashSet<>(user.likedMovieIds));
+    }
+
+   }
